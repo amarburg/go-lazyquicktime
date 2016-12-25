@@ -12,7 +12,8 @@ import "github.com/amarburg/go-prores-libav"
 import "image/png"
 
 
-var TestUrlRoot = "http://localhost:8080/files/"
+var TestUrlRoot = "https://amarburg.github.io/go-lazyfs-testfiles/"
+//var TestUrlRoot = "http://localhost:8080/files/"
 var TestMovPath = "CamHD_Vent_Short.mov"
 
 var SparseHttpStoreRoot = "cache/httpsparse/"
@@ -42,9 +43,12 @@ func main() {
   sz,_ := file.FileSize()
 //  ParseAtom( file, offset, sz, indent )
 
-  tree := quicktime.BuildTree( file, sz )
+  tree,err := quicktime.BuildTree( file, sz )
+  if err != nil {
+    panic("Couldn't build Tree")
+  }
 
-  quicktime.DumpTree( file, tree )
+  quicktime.DumpTree( tree )
 
   moov := tree.FindAtom("moov")
   if moov == nil { panic("Can't find MOOV atom")}
