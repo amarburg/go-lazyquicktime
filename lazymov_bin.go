@@ -6,11 +6,9 @@ import "os"
 
 import "github.com/amarburg/go-lazyfs"
 import "github.com/amarburg/go-quicktime"
-import "github.com/amarburg/go-prores-libav"
-
+import "github.com/amarburg/go-prores-ffmpeg"
 
 import "image/png"
-
 
 var TestUrlRoot = "https://amarburg.github.io/go-lazyfs-testfiles/"
 //var TestUrlRoot = "http://localhost:8080/files/"
@@ -37,13 +35,13 @@ func main() {
     panic("Couldn't open AlphabetPath")
   }
 
-  // var offset int64 = 0
-  // var indent = 0
-
   sz,_ := file.FileSize()
-//  ParseAtom( file, offset, sz, indent )
 
-  tree,err := quicktime.BuildTree( file, sz )
+  set_eagerload := func ( conf *quicktime.BuildTreeConfig ) {
+      conf.EagerloadTypes = []string{"moov"}
+  }
+
+  tree,err := quicktime.BuildTree( file, sz, set_eagerload )
   if err != nil {
     panic("Couldn't build Tree")
   }
@@ -51,6 +49,7 @@ func main() {
   quicktime.DumpTree( tree )
 
   moov := tree.FindAtom("moov")
+  moov.ReadData( file )
   if moov == nil { panic("Can't find MOOV atom")}
 
   tracks := moov.FindAtoms("trak")
