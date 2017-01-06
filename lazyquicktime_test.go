@@ -4,23 +4,29 @@ import "testing"
 import "fmt"
 //import "io"
 import "os"
-import "net/url"
 
 import "github.com/amarburg/go-lazyfs"
 
-
 import "image/png"
 
+//import "net/url"
 //var TestUrlRoot = "https://amarburg.github.io/go-lazyfs-testfiles/"
-var TestUrlRoot = "http://localhost:8080/files/"
-var TestMovPath = "CamHD_Vent_Short.mov"
-var TestUrl,_ = url.Parse( TestUrlRoot + TestMovPath )
+//var TestUrlRoot = "http://localhost:8080/files/"
+//var TestUrl,_ = url.Parse( TestUrlRoot + TestMovPath )
+//var TestMovPath = "CamHD_Vent_Short.mov"
+
+
+// For local testing
+import "github.com/amarburg/go-lazyfs-testfiles"
+var TestMovPath = lazyfs_testfiles.TestMovPath
+
 
 var SparseHttpStoreRoot = "cache/httpsparse/"
 
 func TestConvert( t *testing.T ) {
 
-  source,err := lazyfs.OpenHttpSource( *TestUrl )
+  //source,err := lazyfs.OpenHttpSource( *TestUrl )
+  source,err := lazyfs.OpenLocalFileSource( "../go-lazyfs-testfiles/", TestMovPath )
   if err != nil {
     panic("Couldn't open HttpFSSource")
   }
