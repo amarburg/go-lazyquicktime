@@ -29,7 +29,7 @@ func TestConvert( t *testing.T ) {
 
   srv := lazyfs_testfiles.HttpServer( 4567 )
 
-  testUrl,err := url.Parse( srv.Url + TestMovPath )
+  testUrl,err := url.Parse( "http://localhost:4567/" + TestMovPath )
 
   source,err := lazyfs.OpenHttpSource( *testUrl )
   //fmt.Println(source)
