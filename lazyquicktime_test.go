@@ -9,7 +9,7 @@ import "os"
 import "github.com/amarburg/go-lazyfs"
 
 import "image/png"
-import "github.com/amarburg/go-lazyfs-testfiles"
+import "github.com/amarburg/go-lazyfs-testfiles/http_server"
 
 
 //import "net/url"
@@ -27,7 +27,7 @@ var SparseHttpStoreRoot = "cache/httpsparse/"
 
 func TestConvert( t *testing.T ) {
 
-  srv := lazyfs_testfiles.HttpServer( 4567, "../go-lazyfs-testfiles/" )
+  srv := lazyfs_testfiles.HttpServer( 4567 )
 
   testUrl,err := url.Parse( srv.Url + TestMovPath )
 

@@ -9,14 +9,14 @@ import "github.com/amarburg/go-prores-ffmpeg"
 
 
 type LazyQuicktime struct {
-  file  lazyfs.File
+  file  lazyfs.FileSource 
   Tree  quicktime.AtomArray
   Trak  quicktime.TRAKAtom
   Stbl  *quicktime.STBLAtom
 }
 
 
-func LoadMovMetadata( file lazyfs.File ) (*LazyQuicktime ) {
+func LoadMovMetadata( file lazyfs.FileSource ) (*LazyQuicktime ) {
 
   sz,_ := file.FileSize()
 
