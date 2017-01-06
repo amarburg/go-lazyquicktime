@@ -80,7 +80,7 @@ func (mov *LazyQuicktime) ExtractFrame( frame int ) (image.Image,error) {
 
   frame_offset,frame_size,_ := mov.Stbl.SampleOffsetSize( frame )
 
-  fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
+  //fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
 
   buf := make([]byte, frame_size)
   n,_ := mov.file.ReadAt( buf, frame_offset )
@@ -88,7 +88,7 @@ func (mov *LazyQuicktime) ExtractFrame( frame int ) (image.Image,error) {
   if n != frame_size { panic(fmt.Sprintf("Tried to read %d bytes but got %d instead",frame_size,n))}
 
   width, height := int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height)
-  fmt.Printf("Image is %d x %d", width, height)
+  //fmt.Printf("Image is %d x %d", width, height)
 
   img,err := prores.DecodeProRes( buf, width, height )
 

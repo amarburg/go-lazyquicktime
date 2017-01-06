@@ -2,31 +2,38 @@ package lazyquicktime
 
 import "testing"
 import "fmt"
+import "net/url"
 //import "io"
 import "os"
 
 import "github.com/amarburg/go-lazyfs"
 
 import "image/png"
+import "github.com/amarburg/go-lazyfs-testfiles"
+
 
 //import "net/url"
 //var TestUrlRoot = "https://amarburg.github.io/go-lazyfs-testfiles/"
 //var TestUrlRoot = "http://localhost:8080/files/"
 //var TestUrl,_ = url.Parse( TestUrlRoot + TestMovPath )
-//var TestMovPath = "CamHD_Vent_Short.mov"
+var TestMovPath = "CamHD_Vent_Short.mov"
 
 
 // For local testing
-import "github.com/amarburg/go-lazyfs-testfiles"
-var TestMovPath = lazyfs_testfiles.TestMovPath
+//var TestMovPath = lazyfs_testfiles.TestMovPath
 
 
 var SparseHttpStoreRoot = "cache/httpsparse/"
 
 func TestConvert( t *testing.T ) {
 
-  //source,err := lazyfs.OpenHttpSource( *TestUrl )
-  source,err := lazyfs.OpenLocalFileSource( "../go-lazyfs-testfiles/", TestMovPath )
+  srv := lazyfs_testfiles.HttpServer( 4567, "../go-lazyfs-testfiles/" )
+
+  testUrl,err := url.Parse( srv.Url + TestMovPath )
+
+  source,err := lazyfs.OpenHttpSource( *testUrl )
+  //fmt.Println(source)
+  //source,err := lazyfs.OpenLocalFileSource( "../go-lazyfs-testfiles/", TestMovPath )
   if err != nil {
     panic("Couldn't open HttpFSSource")
   }
@@ -37,23 +44,6 @@ func TestConvert( t *testing.T ) {
   }
 
   mov := LoadMovMetadata( store )
-
-  // fmt.Println("Chunk table:")
-  // for idx,offset := range stbl.Stco.ChunkOffsets {
-  //   fmt.Printf("   %d %20d\n",idx+1, offset )
-  // }
-
-  //fmt.Println(stbl)
-
-  // for sample := 1; sample <= num_frames; sample++ {
-  //     chunk,chunk_start,relasample := stbl.Stsc.SampleChunk( sample )
-  //     fmt.Println("Sample", sample,"is in chunk",chunk,"the",relasample,"'th sample; the chunk starts at sample",chunk_start)
-  //
-  //     offset,_ := stbl.SampleOffset( sample )
-  //     fmt.Println("Sample at byte",offset,"in file")
-  //
-  //
-  // }
 
   // Try extracting a frame
   frame := 2
@@ -68,4 +58,6 @@ func TestConvert( t *testing.T ) {
   err = png.Encode( img_file, img )
   if err != nil { panic(fmt.Sprintf("Error writing png %s: %s", img_filename, err.Error()))}
 
+
+  srv.Stop()
 }
