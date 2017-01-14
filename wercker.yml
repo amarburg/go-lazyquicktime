@@ -1,4 +1,4 @@
-box: amarburg/golang-ffmpeg:wheezy-1.8
+box: amarburg/docker-golang-ffmpeg:wheezy-1.8
 
 build:
 
