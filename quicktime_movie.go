@@ -2,6 +2,7 @@ package lazyquicktime
 
 import "fmt"
 import "image"
+import "errors"
 
 import "github.com/amarburg/go-lazyfs"
 import "github.com/amarburg/go-quicktime"
@@ -9,14 +10,14 @@ import "github.com/amarburg/go-prores-ffmpeg"
 
 
 type LazyQuicktime struct {
-  file  lazyfs.FileSource 
+  file  lazyfs.FileSource
   Tree  quicktime.AtomArray
   Trak  quicktime.TRAKAtom
   Stbl  *quicktime.STBLAtom
 }
 
 
-func LoadMovMetadata( file lazyfs.FileSource ) (*LazyQuicktime ) {
+func LoadMovMetadata( file lazyfs.FileSource ) (*LazyQuicktime,error) {
 
   sz,_ := file.FileSize()
 
@@ -24,22 +25,25 @@ func LoadMovMetadata( file lazyfs.FileSource ) (*LazyQuicktime ) {
     conf.EagerloadTypes = []string{"moov"}
   }
 
-  mov := LazyQuicktime{ file: file }
+fmt.Println( file )
+  mov := &LazyQuicktime{ file: file }
   tree,err := quicktime.BuildTree( file, sz, set_eagerload )
+
   if err != nil {
-    panic("Couldn't build Tree")
+    return mov,err
   }
   mov.Tree = tree
 
 
-  //quicktime.DumpTree( mov.Tree )
+  quicktime.DumpTree( mov.Tree )
 
   moov := mov.Tree.FindAtom("moov")
-  moov.ReadData( file )
-  if moov == nil { panic("Can't find MOOV atom")}
+  if moov == nil { return mov,errors.New("Can't find MOOV atom")}
+
+//  moov.ReadData( file )
 
   tracks := moov.FindAtoms("trak")
-  if tracks == nil || len(tracks) == 0 { panic("Couldn't find any TRAKs in the MOOV")}
+  if tracks == nil || len(tracks) == 0 { return mov,errors.New("Couldn't find any TRAKs in the MOOV")}
   //fmt.Println("Found",len(tracks),"TRAK atoms")
 
   var track *quicktime.Atom = nil
@@ -62,17 +66,17 @@ func LoadMovMetadata( file lazyfs.FileSource ) (*LazyQuicktime ) {
     }
   }
 
-  if track == nil { panic("Couldn't identify the Video track")}
+  if track == nil { return mov,errors.New("Couldn't identify the Video track")}
 
   mov.Trak,err = quicktime.ParseTRAK( track )
-  if err != nil { panic(fmt.Sprintf("Unable to parse TRAK atom: %s", err.Error()))}
+  if err != nil { return mov,errors.New(fmt.Sprintf("Unable to parse TRAK atom: %s", err.Error()))}
 
   mov.Stbl = &mov.Trak.Mdia.Minf.Stbl          // Just an alias
 
   //num_frames := mov.Stbl.NumFrames()
   //fmt.Println("Movie has",num_frames,"frames")
 
-  return &mov
+  return mov, nil
 }
 
 
