@@ -5,7 +5,6 @@ import "fmt"
 
 
 import "github.com/amarburg/go-lazyfs"
-import "github.com/amarburg/go-lazyquicktime"
 
 
 //import "net/url"
