@@ -25,7 +25,7 @@ func LoadMovMetadata( file lazyfs.FileSource ) (*LazyQuicktime,error) {
     conf.EagerloadTypes = []string{"moov"}
   }
 
-fmt.Println( file )
+  fmt.Println( file )
   mov := &LazyQuicktime{ file: file }
   tree,err := quicktime.BuildTree( file, sz, set_eagerload )
 
@@ -35,7 +35,7 @@ fmt.Println( file )
   mov.Tree = tree
 
 
-  quicktime.DumpTree( mov.Tree )
+  //quicktime.DumpTree( mov.Tree )
 
   moov := mov.Tree.FindAtom("moov")
   if moov == nil { return mov,errors.New("Can't find MOOV atom")}
@@ -73,8 +73,8 @@ fmt.Println( file )
 
   mov.Stbl = &mov.Trak.Mdia.Minf.Stbl          // Just an alias
 
-  //num_frames := mov.Stbl.NumFrames()
-  //fmt.Println("Movie has",num_frames,"frames")
+  num_frames := mov.Stbl.NumFrames()
+  fmt.Println("Movie has",num_frames,"frames")
 
   return mov, nil
 }
@@ -84,7 +84,7 @@ func (mov *LazyQuicktime) ExtractFrame( frame int ) (image.Image,error) {
 
   frame_offset,frame_size,_ := mov.Stbl.SampleOffsetSize( frame )
 
-  //fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
+  fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
 
   buf := make([]byte, frame_size)
   n,_ := mov.file.ReadAt( buf, frame_offset )
