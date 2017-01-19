@@ -1,4 +1,4 @@
-package lazyfs_benchmarking
+package lazyquicktime
 
 import "testing"
 import "fmt"
