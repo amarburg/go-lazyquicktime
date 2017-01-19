@@ -1,4 +1,6 @@
-box: amarburg/docker-golang-ffmpeg:wheezy-1.8
+##
+## Need FFMPEG to test.
+box: amarburg/golang-ffmpeg:wheezy-1.8
 
 build:
 
