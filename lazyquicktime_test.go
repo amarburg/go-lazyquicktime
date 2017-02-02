@@ -24,7 +24,7 @@ import "github.com/amarburg/go-lazyfs-testfiles/http_server"
 //var TestMovPath = lazyfs_testfiles.TestMovPath
 
 
-var SparseHttpStoreRoot = "test_cache/httpsparse/"
+//var SparseHttpStoreRoot = "test_cache/httpsparse/"
 
 func TestConvert( t *testing.T ) {
 
