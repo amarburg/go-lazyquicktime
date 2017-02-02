@@ -6,33 +6,25 @@ import "fmt"
 
 import "github.com/amarburg/go-lazyfs"
 
-
-//import "net/url"
-//var TestUrlRoot = "https://amarburg.github.io/go-lazyfs-testfiles/"
-//var TestUrlRoot = "http://localhost:8080/files/"
-//var TestUrl,_ = url.Parse( TestUrlRoot + TestMovPath )
-//var TestMovPath = "CamHD_Vent_Short.mov"
-
 // For local testing
-import "github.com/amarburg/go-lazyfs-testfiles/http_server"
-var TestMovPath = lazyfs_testfiles.TestMovPath
+import "github.com/amarburg/go-lazyfs-testfiles"
 
-var SparseHttpStoreRoot = "cache/httpsparse/"
+var SparseStoreRoot = "cache/sparse/"
 
 func BenchmarkExtractRepeatedFrameFromLocalSourceSparseStore( b *testing.B ) {
 
   //source,err := lazyfs.OpenHttpSource( *TestUrl )
-  source,err := lazyfs.OpenLocalFileSource( "../go-lazyfs-testfiles/", TestMovPath )
-  if err != nil { panic("Couldn't open HttpFSSource") }
+  source,err := lazyfs.OpenLocalFileSource( lazyfs_testfiles.RepoRoot(), lazyfs_testfiles.TestMovFile )
+  if err != nil { panic("Couldn't open Test file") }
 
-  store,err := lazyfs.OpenSparseFileStore( source, SparseHttpStoreRoot )
+  store,err := lazyfs.OpenSparseFileStore( source, SparseStoreRoot )
   if store == nil {
     panic("Couldn't open SparesFileFSStore")
   }
 
   b.ResetTimer()
   for i := 0; i < b.N; i++ {
-    mov := lazyquicktime.LoadMovMetadata( store )
+    mov,_ := LoadMovMetadata( store )
 
     // Try extracting a frame
     frame := 2

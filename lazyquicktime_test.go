@@ -45,7 +45,9 @@ func TestConvert( t *testing.T ) {
     panic("Couldn't open SparesFileFSStore")
   }
 
-  mov := LoadMovMetadata( store )
+  mov,_ := LoadMovMetadata( store )
+
+  fmt.Println("Movie has",mov.NumFrames(),"frames and is ", mov.Duration(), " seconds long" )
 
   // Try extracting a frame
   frame := 2

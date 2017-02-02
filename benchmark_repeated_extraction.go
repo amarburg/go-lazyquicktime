@@ -29,7 +29,7 @@ func BenchmarkConvert( b *testing.B ) {
     panic("Couldn't open SparesFileFSStore")
   }
 
-  mov := LoadMovMetadata( store )
+  mov,_ := LoadMovMetadata( store )
 
   b.ResetTimer()
   for i := 0; i < b.N; i++ {

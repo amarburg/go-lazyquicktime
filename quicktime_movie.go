@@ -14,6 +14,7 @@ type LazyQuicktime struct {
   Tree  quicktime.AtomArray
   Trak  quicktime.TRAKAtom
   Stbl  *quicktime.STBLAtom
+  Mvhd  quicktime.MVHDAtom
 }
 
 
@@ -40,7 +41,9 @@ func LoadMovMetadata( file lazyfs.FileSource ) (*LazyQuicktime,error) {
   moov := mov.Tree.FindAtom("moov")
   if moov == nil { return mov,errors.New("Can't find MOOV atom")}
 
-//  moov.ReadData( file )
+  mvhd := moov.FindAtom("mvhd")
+  if mvhd == nil { return mov, errors.New("Couldn't find MVHD in the moov atom") }
+  mov.Mvhd,_ = quicktime.ParseMVHD( mvhd )
 
   tracks := moov.FindAtoms("trak")
   if tracks == nil || len(tracks) == 0 { return mov,errors.New("Couldn't find any TRAKs in the MOOV")}
@@ -73,12 +76,17 @@ func LoadMovMetadata( file lazyfs.FileSource ) (*LazyQuicktime,error) {
 
   mov.Stbl = &mov.Trak.Mdia.Minf.Stbl          // Just an alias
 
-  num_frames := mov.Stbl.NumFrames()
-  fmt.Println("Movie has",num_frames,"frames")
-
   return mov, nil
 }
 
+
+func (mov *LazyQuicktime) NumFrames() int {
+  return mov.Stbl.NumFrames()
+}
+
+func (mov *LazyQuicktime) Duration() float32 {
+  return mov.Mvhd.Duration()
+}
 
 func (mov *LazyQuicktime) ExtractFrame( frame int ) (image.Image,error) {
 
