@@ -12,6 +12,8 @@ import "image/png"
 import "github.com/amarburg/go-lazyfs-testfiles"
 import "github.com/amarburg/go-lazyfs-testfiles/http_server"
 
+var SparseHttpStoreRoot = "test_cache/httpsparse/"
+
 
 func BenchmarkConvert( b *testing.B ) {
 
