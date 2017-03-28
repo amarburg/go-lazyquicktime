@@ -8,102 +8,110 @@ import "github.com/amarburg/go-lazyfs"
 import "github.com/amarburg/go-quicktime"
 import "github.com/amarburg/go-prores-ffmpeg"
 
-
 type LazyQuicktime struct {
-  file  lazyfs.FileSource
-  Tree  quicktime.AtomArray
-  Trak  quicktime.TRAKAtom
-  Stbl  *quicktime.STBLAtom
-  Mvhd  quicktime.MVHDAtom
+	file lazyfs.FileSource
+	Tree quicktime.AtomArray
+	Trak quicktime.TRAKAtom
+	Stbl *quicktime.STBLAtom
+	Mvhd quicktime.MVHDAtom
 }
 
+func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 
-func LoadMovMetadata( file lazyfs.FileSource ) (*LazyQuicktime,error) {
+	sz, _ := file.FileSize()
 
-  sz,_ := file.FileSize()
+	set_eagerload := func(conf *quicktime.BuildTreeConfig) {
+		conf.EagerloadTypes = []string{"moov"}
+	}
 
-  set_eagerload := func ( conf *quicktime.BuildTreeConfig ) {
-    conf.EagerloadTypes = []string{"moov"}
-  }
+	fmt.Println(file)
+	mov := &LazyQuicktime{file: file}
+	tree, err := quicktime.BuildTree(file, sz, set_eagerload)
 
-  fmt.Println( file )
-  mov := &LazyQuicktime{ file: file }
-  tree,err := quicktime.BuildTree( file, sz, set_eagerload )
+	if err != nil {
+		return mov, err
+	}
+	mov.Tree = tree
 
-  if err != nil {
-    return mov,err
-  }
-  mov.Tree = tree
+	//quicktime.DumpTree( mov.Tree )
 
+	moov := mov.Tree.FindAtom("moov")
+	if moov == nil {
+		return mov, errors.New("Can't find MOOV atom")
+	}
 
-  //quicktime.DumpTree( mov.Tree )
+	mvhd := moov.FindAtom("mvhd")
+	if mvhd == nil {
+		return mov, errors.New("Couldn't find MVHD in the moov atom")
+	}
+	mov.Mvhd, _ = quicktime.ParseMVHD(mvhd)
 
-  moov := mov.Tree.FindAtom("moov")
-  if moov == nil { return mov,errors.New("Can't find MOOV atom")}
+	tracks := moov.FindAtoms("trak")
+	if tracks == nil || len(tracks) == 0 {
+		return mov, errors.New("Couldn't find any TRAKs in the MOOV")
+	}
+	//fmt.Println("Found",len(tracks),"TRAK atoms")
 
-  mvhd := moov.FindAtom("mvhd")
-  if mvhd == nil { return mov, errors.New("Couldn't find MVHD in the moov atom") }
-  mov.Mvhd,_ = quicktime.ParseMVHD( mvhd )
+	var track *quicktime.Atom = nil
+	for i, t := range tracks {
+		mdia := t.FindAtom("mdia")
+		if mdia == nil {
+			fmt.Println("No mdia track", i)
+			continue
+		}
 
-  tracks := moov.FindAtoms("trak")
-  if tracks == nil || len(tracks) == 0 { return mov,errors.New("Couldn't find any TRAKs in the MOOV")}
-  //fmt.Println("Found",len(tracks),"TRAK atoms")
+		minf := mdia.FindAtom("minf")
+		if minf == nil {
+			fmt.Println("No minf track", i)
+			continue
+		}
 
-  var track *quicktime.Atom = nil
-  for i,t := range tracks {
-    mdia := t.FindAtom("mdia")
-    if mdia == nil {
-      fmt.Println("No mdia track",i)
-      continue
-    }
+		if minf.FindAtom("vmhd") != nil {
+			track = t
+			break
+		}
+	}
 
-    minf := mdia.FindAtom("minf")
-    if minf == nil {
-      fmt.Println("No minf track",i)
-      continue
-    }
+	if track == nil {
+		return mov, errors.New("Couldn't identify the Video track")
+	}
 
-    if minf.FindAtom("vmhd") != nil {
-      track = t
-      break
-    }
-  }
+	mov.Trak, err = quicktime.ParseTRAK(track)
+	if err != nil {
+		return mov, errors.New(fmt.Sprintf("Unable to parse TRAK atom: %s", err.Error()))
+	}
 
-  if track == nil { return mov,errors.New("Couldn't identify the Video track")}
+	mov.Stbl = &mov.Trak.Mdia.Minf.Stbl // Just an alias
 
-  mov.Trak,err = quicktime.ParseTRAK( track )
-  if err != nil { return mov,errors.New(fmt.Sprintf("Unable to parse TRAK atom: %s", err.Error()))}
-
-  mov.Stbl = &mov.Trak.Mdia.Minf.Stbl          // Just an alias
-
-  return mov, nil
+	return mov, nil
 }
-
 
 func (mov *LazyQuicktime) NumFrames() int {
-  return mov.Stbl.NumFrames()
+	return mov.Stbl.NumFrames()
 }
 
 func (mov *LazyQuicktime) Duration() float32 {
-  return mov.Mvhd.Duration()
+	return mov.Mvhd.Duration()
 }
 
-func (mov *LazyQuicktime) ExtractFrame( frame int ) (image.Image,error) {
+func (mov *LazyQuicktime) ExtractFrame(frame int) (image.Image, error) {
 
-  frame_offset,frame_size,_ := mov.Stbl.SampleOffsetSize( frame )
+	frame_offset, frame_size, _ := mov.Stbl.SampleOffsetSize(frame)
 
-  fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
+	fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
 
-  buf := make([]byte, frame_size)
-  n,_ := mov.file.ReadAt( buf, frame_offset )
+	buf := make([]byte, frame_size)
+	n, _ := mov.file.ReadAt(buf, frame_offset)
 
-  if n != frame_size { panic(fmt.Sprintf("Tried to read %d bytes but got %d instead",frame_size,n))}
+	if n != frame_size {
+		panic(fmt.Sprintf("Tried to read %d bytes but got %d instead", frame_size, n))
+	}
 
-  width, height := int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height)
-  //fmt.Printf("Image is %d x %d", width, height)
+	width, height := int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height)
+	//fmt.Printf("Image is %d x %d", width, height)
 
-  img,err := prores.DecodeProRes( buf, width, height )
+	img, err := prores.DecodeProRes(buf, width, height)
 
-  return img,err
+	return img, err
 
 }
