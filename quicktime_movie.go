@@ -24,16 +24,14 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 		conf.EagerloadTypes = []string{"moov"}
 	}
 
-	fmt.Println(file)
 	mov := &LazyQuicktime{file: file}
+
 	tree, err := quicktime.BuildTree(file, sz, set_eagerload)
 
 	if err != nil {
 		return mov, err
 	}
 	mov.Tree = tree
-
-	//quicktime.DumpTree( mov.Tree )
 
 	moov := mov.Tree.FindAtom("moov")
 	if moov == nil {
@@ -50,7 +48,6 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 	if tracks == nil || len(tracks) == 0 {
 		return mov, errors.New("Couldn't find any TRAKs in the MOOV")
 	}
-	//fmt.Println("Found",len(tracks),"TRAK atoms")
 
 	var track *quicktime.Atom = nil
 	for i, t := range tracks {
@@ -101,14 +98,18 @@ func (mov *LazyQuicktime) ExtractFrame(frame int) (image.Image, error) {
 	fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
 
 	buf := make([]byte, frame_size)
+
+	if buf == nil {
+		return nil, fmt.Errorf("Couldn't make buffer of size %d", frame_size)
+	}
+
 	n, _ := mov.file.ReadAt(buf, frame_offset)
 
 	if n != frame_size {
-		panic(fmt.Sprintf("Tried to read %d bytes but got %d instead", frame_size, n))
+		return nil, fmt.Errorf("Tried to read %d bytes but got %d instead", frame_size, n)
 	}
 
 	width, height := int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height)
-	//fmt.Printf("Image is %d x %d", width, height)
 
 	img, err := prores.DecodeProRes(buf, width, height)
 
