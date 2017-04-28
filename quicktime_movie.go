@@ -95,7 +95,7 @@ func (mov *LazyQuicktime) ExtractFrame(frame int) (image.Image, error) {
 
 	frame_offset, frame_size, _ := mov.Stbl.SampleOffsetSize(frame)
 
-	fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
+	//fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
 
 	buf := make([]byte, frame_size)
 
