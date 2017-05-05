@@ -18,13 +18,16 @@ type LazyQuicktime struct {
 
 func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 
-	sz, _ := file.FileSize()
+	mov := &LazyQuicktime{file: file}
+
+	sz, err := file.FileSize()
+	if sz < 0 || err != nil {
+		return mov, fmt.Errorf("Unable to retrieve file size.")
+	}
 
 	set_eagerload := func(conf *quicktime.BuildTreeConfig) {
 		conf.EagerloadTypes = []string{"moov"}
 	}
-
-	mov := &LazyQuicktime{file: file}
 
 	tree, err := quicktime.BuildTree(file, sz, set_eagerload)
 
