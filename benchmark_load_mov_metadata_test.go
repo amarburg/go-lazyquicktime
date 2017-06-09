@@ -11,7 +11,7 @@ var SparseStoreRoot = "cache/sparse/"
 
 type frameFunc func() int
 
-func loadMovMetadataTask( b *testing.B, source lazyfs.FileSource, f frameFunc ) {
+func loadMovMetadataTask(b *testing.B, source lazyfs.FileSource, f frameFunc) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		mov, err := LoadMovMetadata(source)
@@ -21,12 +21,11 @@ func loadMovMetadataTask( b *testing.B, source lazyfs.FileSource, f frameFunc ) 
 		}
 
 		// Assert the metadata is correct
-		if( mov.NumFrames() != 31 ) {
+		if mov.NumFrames() != 31 {
 			b.Errorf("Incorrect number of frames (%d)", mov.NumFrames())
 		}
 	}
 }
-
 
 func BenchmarkLoadMovMetadataFromLocalSource(b *testing.B) {
 
@@ -35,9 +34,8 @@ func BenchmarkLoadMovMetadataFromLocalSource(b *testing.B) {
 		panic("Couldn't open Test file")
 	}
 
-	loadMovMetadataTask( b, fileSource, func() int { return 2 } )
+	loadMovMetadataTask(b, fileSource, func() int { return 2 })
 }
-
 
 func BenchmarkLoadMovMetadataFromLocalSourceSparseStore(b *testing.B) {
 
@@ -52,5 +50,5 @@ func BenchmarkLoadMovMetadataFromLocalSourceSparseStore(b *testing.B) {
 		panic("Couldn't open SparesFileFSStore")
 	}
 
-	loadMovMetadataTask( b, sparseStore, func() int { return 2 } )
+	loadMovMetadataTask(b, sparseStore, func() int { return 2 })
 }

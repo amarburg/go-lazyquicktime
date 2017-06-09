@@ -11,13 +11,13 @@ import "github.com/amarburg/go-lazyfs"
 import "image"
 import "image/png"
 import "github.com/amarburg/go-lazyfs-testfiles"
+
 // import "github.com/amarburg/go-lazyfs-testfiles/http_server"
 
-
-func doExtractFrame( t *testing.T, src lazyfs.FileSource ) (image.Image,error) {
+func doExtractFrame(t *testing.T, src lazyfs.FileSource) (image.Image, error) {
 	mov, _ := LoadMovMetadata(src)
 
-	if( mov.NumFrames() != 31 ) {
+	if mov.NumFrames() != 31 {
 		t.Errorf("Movie has incorrect number of frames (%d)", mov.NumFrames())
 	}
 
@@ -42,10 +42,10 @@ func TestExtractFrameLocalFileSource(t *testing.T) {
 		panic("Couldn't open HttpFSSource")
 	}
 
-	_,err = doExtractFrame( t, fileSource )
+	_, err = doExtractFrame(t, fileSource)
 
 	if err != nil {
-		t.Errorf("Error extracting frame: %s", err.Error() )
+		t.Errorf("Error extracting frame: %s", err.Error())
 	}
 
 }
@@ -65,7 +65,7 @@ func TestSavePngFromLocalFileSource(t *testing.T) {
 		t.Error("Couldn't open LocalFileSource")
 	}
 
-	img,_ := doExtractFrame( t, fileSource )
+	img, _ := doExtractFrame(t, fileSource)
 
 	img_filename := fmt.Sprintf("extracted_local.png")
 	img_file, err := os.Create(img_filename)
