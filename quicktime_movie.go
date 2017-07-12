@@ -4,6 +4,9 @@ import "fmt"
 import "image"
 import "errors"
 
+import "time"
+import "log"
+
 import "github.com/amarburg/go-lazyfs"
 import "github.com/amarburg/go-quicktime"
 import "github.com/amarburg/go-prores-ffmpeg"
@@ -112,7 +115,9 @@ func (mov *LazyQuicktime) ExtractFrame(frame int) (image.Image, error) {
 		return nil, fmt.Errorf("Couldn't make buffer of size %d", frame_size)
 	}
 
+	startRead := time.Now()
 	n, _ := mov.file.ReadAt(buf, frame_offset)
+	log.Printf("HTTP read took %s", time.Since(startRead))
 
 	if n != frame_size {
 		return nil, fmt.Errorf("Tried to read %d bytes but got %d instead", frame_size, n)
@@ -120,7 +125,9 @@ func (mov *LazyQuicktime) ExtractFrame(frame int) (image.Image, error) {
 
 	width, height := int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height)
 
+	startDecode := time.Now()
 	img, err := prores.DecodeProRes(buf, width, height)
+	log.Printf("Prores decode took %s", time.Since(startDecode))
 
 	return img, err
 

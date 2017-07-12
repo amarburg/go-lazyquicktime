@@ -7,13 +7,13 @@ import "github.com/amarburg/go-lazyfs"
 // Provides test files
 import "github.com/amarburg/go-lazyfs-testfiles"
 
-func extractFrameBenchmark( b *testing.B, source lazyfs.FileSource, f frameFunc ) {
+func extractFrameBenchmark(b *testing.B, source lazyfs.FileSource, f frameFunc) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		mov, _ := LoadMovMetadata(source)
 
 		// Try extracting a frame
-		 img,err := mov.ExtractFrame(f())
+		img, err := mov.ExtractFrame(f())
 
 		if err != nil {
 			b.Errorf("Error decoding frame: %s", err.Error())
@@ -25,16 +25,14 @@ func extractFrameBenchmark( b *testing.B, source lazyfs.FileSource, f frameFunc 
 	}
 }
 
-
 func BenchmarkExtractFrameFromLocalSource(b *testing.B) {
 	fileSource, err := lazyfs.OpenLocalFileSource(lazyfs_testfiles.RepoRoot(), lazyfs_testfiles.TestMovFile)
 	if fileSource == nil || err != nil {
 		panic("Couldn't open Test file")
 	}
 
-	extractFrameBenchmark( b, fileSource, func() int { return 2 } )
+	extractFrameBenchmark(b, fileSource, func() int { return 2 })
 }
-
 
 func BenchmarkExtractFrameFromLocalSourceSparseStore(b *testing.B) {
 
@@ -49,5 +47,5 @@ func BenchmarkExtractFrameFromLocalSourceSparseStore(b *testing.B) {
 		panic("Couldn't open SparesFileFSStore")
 	}
 
-	extractFrameBenchmark( b, sparseStore, func() int { return 2 } )
+	extractFrameBenchmark(b, sparseStore, func() int { return 2 })
 }
