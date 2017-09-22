@@ -11,6 +11,8 @@ import "github.com/amarburg/go-lazyfs"
 import "github.com/amarburg/go-quicktime"
 import "github.com/amarburg/go-prores-ffmpeg"
 
+const Version = "v0.1.0"
+
 type LazyQuicktime struct {
 	file lazyfs.FileSource
 	Tree quicktime.AtomArray
