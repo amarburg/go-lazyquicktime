@@ -36,7 +36,7 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 		conf.EagerloadTypes = []string{"moov"}
 	}
 
-	fmt.Println("Reading Mov of size ", mov.FileSize)
+	//fmt.Println("Reading Mov of size ", mov.FileSize)
 	tree, err := quicktime.BuildTree(file, uint64(mov.FileSize), set_eagerload)
 
 	if err != nil {
