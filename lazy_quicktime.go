@@ -11,8 +11,12 @@ import "github.com/amarburg/go-lazyfs"
 import "github.com/amarburg/go-quicktime"
 import "github.com/amarburg/go-prores-ffmpeg"
 
+// Version string for the package
 const Version = "v0.1.0"
 
+// LazyQuicktime stores the metadata from a Quicktime Movie
+// extracted via a lazyFS.
+// Stores a copy of the lazyFS to allow lazy-loading
 type LazyQuicktime struct {
 	file lazyfs.FileSource
 	Tree quicktime.AtomArray
@@ -23,6 +27,7 @@ type LazyQuicktime struct {
 	FileSize int64
 }
 
+// LoadMovMetadata creates a LazyQuicktime by querying a lazyfs.FileSource.
 func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 
 	mov := &LazyQuicktime{file: file}
@@ -34,12 +39,12 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 
 	mov.FileSize = sz
 
-	set_eagerload := func(conf *quicktime.BuildTreeConfig) {
+	setEagerload := func(conf *quicktime.BuildTreeConfig) {
 		conf.EagerloadTypes = []string{"moov"}
 	}
 
 	//fmt.Println("Reading Mov of size ", mov.FileSize)
-	tree, err := quicktime.BuildTree(file, uint64(mov.FileSize), set_eagerload)
+	tree, err := quicktime.BuildTree(file, uint64(mov.FileSize), setEagerload)
 
 	if err != nil {
 		return mov, err
@@ -62,7 +67,7 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 		return mov, errors.New("Couldn't find any TRAKs in the MOOV")
 	}
 
-	var track *quicktime.Atom = nil
+	var track *quicktime.Atom
 	for i, t := range tracks {
 		mdia := t.FindAtom("mdia")
 		if mdia == nil {
@@ -88,7 +93,7 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 
 	mov.Trak, err = quicktime.ParseTRAK(track)
 	if err != nil {
-		return mov, errors.New(fmt.Sprintf("Unable to parse TRAK atom: %s", err.Error()))
+		return mov, fmt.Errorf("Unable to parse TRAK atom: %s", err.Error())
 	}
 
 	mov.Stbl = &mov.Trak.Mdia.Minf.Stbl // Just an alias
@@ -96,39 +101,42 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 	return mov, nil
 }
 
+// NumFrames reports the number of frames in the LazyQuicktime
 func (mov *LazyQuicktime) NumFrames() int {
 	return mov.Stbl.NumFrames()
 }
 
+// Duration reports the length of the LazyQuicktime in seconds.
 func (mov *LazyQuicktime) Duration() float32 {
 	return mov.Mvhd.Duration()
 }
 
+// ExtractFrame extracts the given frame from the LazyQuicktime
 func (mov *LazyQuicktime) ExtractFrame(frame int) (image.Image, error) {
 
-	frame_offset, frame_size, _ := mov.Stbl.SampleOffsetSize(frame)
+	frameOffset, frameSize, _ := mov.Stbl.SampleOffsetSize(frame)
 
 	//fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
 
-	buf := make([]byte, frame_size)
+	buf := make([]byte, frameSize)
 
 	if buf == nil {
-		return nil, fmt.Errorf("Couldn't make buffer of size %d", frame_size)
+		return nil, fmt.Errorf("Couldn't make buffer of size %d", frameSize)
 	}
 
 	startRead := time.Now()
-	n, _ := mov.file.ReadAt(buf, frame_offset)
+	n, _ := mov.file.ReadAt(buf, frameOffset)
 	log.Printf("HTTP read took %s", time.Since(startRead))
 
-	if n != frame_size {
-		return nil, fmt.Errorf("Tried to read %d bytes but got %d instead", frame_size, n)
+	if n != frameSize {
+		return nil, fmt.Errorf("Tried to read %d bytes but got %d instead", frameSize, n)
 	}
 
 	width, height := int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height)
 
-	startDecode := time.Now()
+	//startDecode := time.Now()
 	img, err := prores.DecodeProRes(buf, width, height)
-	log.Printf("Prores decode took %s", time.Since(startDecode))
+	//log.Printf("Prores decode took %s", time.Since(startDecode))
 
 	return img, err
 

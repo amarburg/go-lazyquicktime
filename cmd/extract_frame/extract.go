@@ -13,30 +13,30 @@ import (
 
 func main() {
 	var frameNum, startAt, endAt int
-	var srcUrl, srcFile string
+	var srcURL, srcFile string
 	var outputFile, statisticsFile string
 	flag.IntVar(&frameNum, "frame", 0, "Frame number to extract")
 
 	flag.IntVar(&startAt, "start", -1, "")
 	flag.IntVar(&endAt, "end", -1, "")
 
-	flag.StringVar(&srcUrl, "url", "", "URL to query")
+	flag.StringVar(&srcURL, "url", "", "URL to query")
 	flag.StringVar(&srcFile, "file", "", "URL to query")
 	flag.StringVar(&outputFile, "output", "image_%09d.png", "Outputfile")
   flag.StringVar(&statisticsFile, "statistics", "", "Statistics file")
 
 	flag.Parse()
 
-	if len(srcUrl) <= 0 && len(srcFile) <= 0 {
+	if len(srcURL) <= 0 && len(srcFile) <= 0 {
 		panic("--url or --file must be specified")
 	}
 
 	var source lazyfs.FileSource
 	var err error
 
-	if len(srcUrl) > 0 {
-		testUrl, err := url.Parse(srcUrl)
-		source, err = lazyfs.OpenHttpSource(*testUrl)
+	if len(srcURL) > 0 {
+		testURL, err := url.Parse(srcURL)
+		source, err = lazyfs.OpenHttpSource(*testURL)
 
 		if err != nil {
 			panic(fmt.Sprintf("Couldn't open HttpFSSource: %s", err.Error() ))
@@ -65,7 +65,7 @@ func main() {
 
   var statsFile *os.File
   if len(statisticsFile) > 0 {
-    statsFile,err = os.Create(statisticsFile)
+    statsFile, err = os.Create(statisticsFile)
     if err != nil {
       panic(fmt.Sprintf("Unable to open stats file: %s", err.Error()))
     }
@@ -77,11 +77,11 @@ func main() {
 
 	for i := startAt; i < endAt; i++ {
 
-    frame_offset, frame_size, _ := mov.Stbl.SampleOffsetSize(i)
-    chunk, chunk_start, remainder, err := mov.Stbl.Stsc.SampleChunk(i)
+    frameOffset, frameSize, _ := mov.Stbl.SampleOffsetSize(i)
+    chunk, chunkStart, remainder, err := mov.Stbl.Stsc.SampleChunk(i)
 
     if statsFile != nil {
-      fmt.Fprintf(statsFile, "%d,%d,%d,%d,%d,%d,", i,frame_offset,frame_size,chunk,chunk_start,remainder)
+      fmt.Fprintf(statsFile, "%d,%d,%d,%d,%d,%d,", i,frameOffset,frameSize,chunk,chunkStart,remainder)
     }
 
 		// Try extracting a frame
@@ -95,14 +95,14 @@ func main() {
 
 		outFile := fmt.Sprintf(outputFile, i)
 
-		img_file, err := os.Create(outFile)
+		imgFile, err := os.Create(outFile)
 		if err != nil {
 			fmt.Printf("Error creating png %s: %s\n", outFile, err.Error())
 			fmt.Fprintf(statsFile,"N\n")
       continue
 		}
 
-		err = png.Encode(img_file, img)
+		err = png.Encode(imgFile, img)
 		if err != nil {
 			fmt.Printf("Error writing png %s: %s\n", outFile, err.Error())
 			fmt.Fprintf(statsFile,"N\n")

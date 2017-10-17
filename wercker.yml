@@ -3,9 +3,11 @@
 box: amarburg/golang-ffmpeg:wheezy-1.8
 
 build:
-
   steps:
-    - setup-go-workspace
+    - setup-go-workspace:
+      package-dir: github.com/amarburg/go-lazyquicktime
+
+    - wercker/golint
 
     # Gets the dependencies
     - script:

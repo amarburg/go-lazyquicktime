@@ -13,20 +13,20 @@ import "image/png"
 import "github.com/amarburg/go-lazyfs-testfiles"
 import "github.com/amarburg/go-lazyfs-testfiles/http_server"
 
-var SparseHttpStoreRoot = "test_cache/httpsparse/"
+var SparseHTTPStoreRoot = "test_cache/httpsparse/"
 
 func BenchmarkConvert(b *testing.B) {
 
 	srv := lazyfs_testfiles_http_server.HttpServer()
 	defer srv.Stop()
 
-	testUrl, err := url.Parse(srv.Url + lazyfs_testfiles.TestMovFile)
-	source, err := lazyfs.OpenHttpSource(*testUrl)
+	testURL, err := url.Parse(srv.Url + lazyfs_testfiles.TestMovFile)
+	source, err := lazyfs.OpenHttpSource(*testURL)
 	if err != nil {
 		panic("Couldn't open HttpFSSource")
 	}
 
-	store, err := lazyfs.OpenSparseFileStore(source, SparseHttpStoreRoot)
+	store, err := lazyfs.OpenSparseFileStore(source, SparseHTTPStoreRoot)
 	if store == nil {
 		panic("Couldn't open SparesFileFSStore")
 	}
@@ -44,15 +44,15 @@ func BenchmarkConvert(b *testing.B) {
 			panic(fmt.Sprintf("Error decoding frame: %s", err.Error()))
 		}
 
-		img_filename := fmt.Sprintf("frame%06d.png", frame)
-		img_file, err := os.Create(img_filename)
+		imgFilename := fmt.Sprintf("frame%06d.png", frame)
+		imgFile, err := os.Create(imgFilename)
 		if err != nil {
-			panic(fmt.Sprintf("Error creating png %s: %s", img_filename, err.Error()))
+			panic(fmt.Sprintf("Error creating png %s: %s", imgFilename, err.Error()))
 		}
 
-		err = png.Encode(img_file, img)
+		err = png.Encode(imgFile, img)
 		if err != nil {
-			panic(fmt.Sprintf("Error writing png %s: %s", img_filename, err.Error()))
+			panic(fmt.Sprintf("Error writing png %s: %s", imgFilename, err.Error()))
 		}
 	}
 	b.StopTimer()
