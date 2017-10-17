@@ -111,8 +111,7 @@ func (mov *LazyQuicktime) Duration() float32 {
 	return mov.Mvhd.Duration()
 }
 
-// ExtractFrame extracts the given frame from the LazyQuicktime
-func (mov *LazyQuicktime) ExtractFrame(frame int) (image.Image, error) {
+func (mov *LazyQuicktime) ExtractFrame(frame int) (*image.NRGBA, error) {
 
 	frameOffset, frameSize, _ := mov.Stbl.SampleOffsetSize(frame)
 
