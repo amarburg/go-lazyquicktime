@@ -26,7 +26,18 @@ func doExtractFrame(t *testing.T, src lazyfs.FileSource) (image.Image, error) {
 		t.Errorf("Error decoding frame: %s", err.Error())
 	}
 
+	bounds := img.Bounds()
+	width := bounds.Max.X - bounds.Min.X
+	height := bounds.Max.Y - bounds.Min.Y
+
 	// Check the frame
+	if width != lazyfs_testfiles.TestMovieWidth {
+			t.Errorf("Image is not expected width (%d != %d)", width, lazyfs_testfiles.TestMovieWidth)
+	}
+
+	if height != lazyfs_testfiles.TestMovieHeight {
+			t.Errorf("Image is not expected height (%d != %d)", height, lazyfs_testfiles.TestMovieHeight)
+	}
 
 	return img, err
 }
