@@ -34,7 +34,7 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 
 	sz, err := file.FileSize()
 	if sz < 0 || err != nil {
-		return mov, fmt.Errorf("Unable to retrieve file size.")
+		return mov, fmt.Errorf("unable to retrieve file size")
 	}
 
 	mov.FileSize = sz
@@ -53,18 +53,18 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 
 	moov := mov.Tree.FindAtom("moov")
 	if moov == nil {
-		return mov, errors.New("Can't find MOOV atom")
+		return mov, errors.New("can't find MOOV atom")
 	}
 
 	mvhd := moov.FindAtom("mvhd")
 	if mvhd == nil {
-		return mov, errors.New("Couldn't find MVHD in the moov atom")
+		return mov, errors.New("couldn't find MVHD in the moov atom")
 	}
 	mov.Mvhd, _ = quicktime.ParseMVHD(mvhd)
 
 	tracks := moov.FindAtoms("trak")
 	if tracks == nil || len(tracks) == 0 {
-		return mov, errors.New("Couldn't find any TRAKs in the MOOV")
+		return mov, errors.New("couldn't find any TRAKs in the MOOV")
 	}
 
 	var track *quicktime.Atom
@@ -88,12 +88,12 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 	}
 
 	if track == nil {
-		return mov, errors.New("Couldn't identify the Video track")
+		return mov, errors.New("couldn't identify the Video track")
 	}
 
 	mov.Trak, err = quicktime.ParseTRAK(track)
 	if err != nil {
-		return mov, fmt.Errorf("Unable to parse TRAK atom: %s", err.Error())
+		return mov, fmt.Errorf("unable to parse TRAK atom: %s", err.Error())
 	}
 
 	mov.Stbl = &mov.Trak.Mdia.Minf.Stbl // Just an alias
@@ -127,7 +127,7 @@ func (mov *LazyQuicktime) ExtractNRGBA(frame int) (*image.NRGBA, error) {
 	buf := make([]byte, frameSize)
 
 	if buf == nil {
-		return nil, fmt.Errorf("Couldn't make buffer of size %d", frameSize)
+		return nil, fmt.Errorf("couldn't make buffer of size %d", frameSize)
 	}
 
 	startRead := time.Now()
@@ -135,7 +135,7 @@ func (mov *LazyQuicktime) ExtractNRGBA(frame int) (*image.NRGBA, error) {
 	log.Printf("HTTP read took %s", time.Since(startRead))
 
 	if n != frameSize {
-		return nil, fmt.Errorf("Tried to read %d bytes but got %d instead", frameSize, n)
+		return nil, fmt.Errorf("tried to read %d bytes but got %d instead", frameSize, n)
 	}
 
 	width, height := int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height)
