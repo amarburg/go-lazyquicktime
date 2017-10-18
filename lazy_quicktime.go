@@ -18,11 +18,11 @@ const Version = "v0.1.0"
 // extracted via a lazyFS.
 // Stores a copy of the lazyFS to allow lazy-loading
 type LazyQuicktime struct {
-	file lazyfs.FileSource
-	Tree quicktime.AtomArray
-	Trak quicktime.TRAKAtom
-	Stbl *quicktime.STBLAtom
-	Mvhd quicktime.MVHDAtom
+	Source lazyfs.FileSource
+	Tree   quicktime.AtomArray
+	Trak   quicktime.TRAKAtom
+	Stbl   *quicktime.STBLAtom
+	Mvhd   quicktime.MVHDAtom
 
 	FileSize int64
 }
@@ -30,7 +30,7 @@ type LazyQuicktime struct {
 // LoadMovMetadata creates a LazyQuicktime by querying a lazyfs.FileSource.
 func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 
-	mov := &LazyQuicktime{file: file}
+	mov := &LazyQuicktime{Source: file}
 
 	sz, err := file.FileSize()
 	if sz < 0 || err != nil {
@@ -131,7 +131,7 @@ func (mov *LazyQuicktime) ExtractNRGBA(frame int) (*image.NRGBA, error) {
 	}
 
 	startRead := time.Now()
-	n, _ := mov.file.ReadAt(buf, frameOffset)
+	n, _ := mov.Source.ReadAt(buf, frameOffset)
 	log.Printf("HTTP read took %s", time.Since(startRead))
 
 	if n != frameSize {
