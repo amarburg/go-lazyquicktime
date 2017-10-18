@@ -107,7 +107,7 @@ func (mov *LazyQuicktime) NumFrames() int {
 }
 
 // Duration reports the length of the LazyQuicktime in seconds.
-func (mov *LazyQuicktime) Duration() float32 {
+func (mov *LazyQuicktime) Duration() time.Duration {
 	return mov.Mvhd.Duration()
 }
 
