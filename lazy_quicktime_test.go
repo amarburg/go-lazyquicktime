@@ -1,12 +1,12 @@
 package lazyquicktime
 
 import (
-	"image"
-	"testing"
-	"net/url"
 	"github.com/amarburg/go-lazyfs"
 	"github.com/amarburg/go-lazyfs-testfiles"
 	"github.com/amarburg/go-lazyfs-testfiles/http_server"
+	"image"
+	"net/url"
+	"testing"
 )
 
 func doExtractFrame(t *testing.T, src lazyfs.FileSource) (image.Image, error) {
@@ -32,11 +32,11 @@ func doExtractFrame(t *testing.T, src lazyfs.FileSource) (image.Image, error) {
 
 	// Check the frame
 	if width != lazyfs_testfiles.TestMovieWidth {
-			t.Errorf("Image is not expected width (%d != %d)", width, lazyfs_testfiles.TestMovieWidth)
+		t.Errorf("Image is not expected width (%d != %d)", width, lazyfs_testfiles.TestMovieWidth)
 	}
 
 	if height != lazyfs_testfiles.TestMovieHeight {
-			t.Errorf("Image is not expected height (%d != %d)", height, lazyfs_testfiles.TestMovieHeight)
+		t.Errorf("Image is not expected height (%d != %d)", height, lazyfs_testfiles.TestMovieHeight)
 	}
 
 	return img, err

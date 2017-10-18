@@ -111,12 +111,13 @@ func (mov *LazyQuicktime) Duration() float32 {
 	return mov.Mvhd.Duration()
 }
 
-
+// ExtractFrame extracts an individual frame from a ProRes file as an Image
 func (mov *LazyQuicktime) ExtractFrame(frame int) (image.Image, error) {
 	return mov.ExtractNRGBA(frame)
 }
 
-
+// ExtractNRGBA extracts an individual frame from a ProRes file specifically
+// as an image.NRGBA
 func (mov *LazyQuicktime) ExtractNRGBA(frame int) (*image.NRGBA, error) {
 
 	frameOffset, frameSize, _ := mov.Stbl.SampleOffsetSize(frame)
