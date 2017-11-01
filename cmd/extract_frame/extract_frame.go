@@ -83,7 +83,7 @@ func main() {
 		}
 
 		// Try extracting a frame
-		img, err := mov.ExtractFrame(i)
+		img, err := mov.ExtractFrame(uint64(i))
 
 		if err != nil {
 			fmt.Printf("Error decoding frame: %s\n", err.Error())
