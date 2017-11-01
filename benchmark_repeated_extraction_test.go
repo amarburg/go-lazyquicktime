@@ -37,7 +37,7 @@ func BenchmarkConvert(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 
 		// Try extracting a frame
-		frame := 2
+		frame := uint64(2)
 		img, _ := mov.ExtractFrame(frame)
 
 		if err != nil {

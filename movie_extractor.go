@@ -2,11 +2,12 @@ package lazyquicktime
 
 import (
 	"image"
+	"time"
 )
 
 // MovieExtractor is the abstract interface to a quicktime movie.
 type MovieExtractor interface {
-	NumFrames() int
-	Duration() float32
-	ExtractFrame(frame int) (image.Image, error)
+	NumFrames() uint64
+	Duration() time.Duration
+	ExtractFrame(frame uint64) (image.Image, error)
 }

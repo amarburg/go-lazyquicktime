@@ -19,7 +19,7 @@ func doExtractFrame(t *testing.T, src lazyfs.FileSource) (image.Image, error) {
 	//fmt.Println("Movie has", mov.NumFrames(), "frames and is ", mov.Duration(), " seconds long")
 
 	// Try extracting a frame
-	frame := 2
+	frame := uint64(2)
 	img, err := mov.ExtractFrame(frame)
 
 	if err != nil {

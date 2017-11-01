@@ -102,7 +102,7 @@ func LoadMovMetadata(file lazyfs.FileSource) (*LazyQuicktime, error) {
 }
 
 // NumFrames reports the number of frames in the LazyQuicktime
-func (mov *LazyQuicktime) NumFrames() int {
+func (mov *LazyQuicktime) NumFrames() uint64 {
 	return mov.Stbl.NumFrames()
 }
 
@@ -112,15 +112,15 @@ func (mov *LazyQuicktime) Duration() time.Duration {
 }
 
 // ExtractFrame extracts an individual frame from a ProRes file as an Image
-func (mov *LazyQuicktime) ExtractFrame(frame int) (image.Image, error) {
+func (mov *LazyQuicktime) ExtractFrame(frame uint64) (image.Image, error) {
 	return mov.ExtractNRGBA(frame)
 }
 
 // ExtractNRGBA extracts an individual frame from a ProRes file specifically
 // as an image.NRGBA
-func (mov *LazyQuicktime) ExtractNRGBA(frame int) (*image.NRGBA, error) {
+func (mov *LazyQuicktime) ExtractNRGBA(frame uint64) (*image.NRGBA, error) {
 
-	frameOffset, frameSize, _ := mov.Stbl.SampleOffsetSize(frame)
+	frameOffset, frameSize, _ := mov.Stbl.SampleOffsetSize(int(frame))
 
 	//fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
 

@@ -31,7 +31,7 @@ func BenchmarkExtractFrameFromLocalSource(b *testing.B) {
 		panic("Couldn't open Test file")
 	}
 
-	extractFrameBenchmark(b, fileSource, func() int { return 2 })
+	extractFrameBenchmark(b, fileSource, func() uint64 { return 2 })
 }
 
 func BenchmarkExtractFrameFromLocalSourceSparseStore(b *testing.B) {
@@ -47,5 +47,5 @@ func BenchmarkExtractFrameFromLocalSourceSparseStore(b *testing.B) {
 		panic("Couldn't open SparesFileFSStore")
 	}
 
-	extractFrameBenchmark(b, sparseStore, func() int { return 2 })
+	extractFrameBenchmark(b, sparseStore, func() uint64 { return 2 })
 }
