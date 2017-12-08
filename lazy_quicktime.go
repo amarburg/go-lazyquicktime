@@ -5,7 +5,6 @@ import "image"
 import "errors"
 
 import "time"
-import "log"
 
 import "github.com/amarburg/go-lazyfs"
 import "github.com/amarburg/go-quicktime"
@@ -111,9 +110,18 @@ func (mov *LazyQuicktime) Duration() time.Duration {
 	return mov.Mvhd.Duration()
 }
 
+type LQTPerformance struct {
+		Read, Decode   time.Duration
+}
+
 // ExtractFrame extracts an individual frame from a ProRes file as an Image
 func (mov *LazyQuicktime) ExtractFrame(frame uint64) (image.Image, error) {
 	return mov.ExtractNRGBA(frame)
+}
+
+// ExtractFrame extracts an individual frame from a ProRes file as an Image
+func (mov *LazyQuicktime) ExtractFramePerf(frame uint64) (image.Image, LQTPerformance, error) {
+	return mov.ExtractNRGBAPerf(frame)
 }
 
 // ExtractNRGBA extracts an individual frame from a ProRes file specifically
@@ -122,28 +130,53 @@ func (mov *LazyQuicktime) ExtractNRGBA(frame uint64) (*image.NRGBA, error) {
 
 	frameOffset, frameSize, _ := mov.Stbl.SampleOffsetSize(int(frame))
 
-	//fmt.Printf("Extracting frame %d at offset %d size %d\n", frame, frame_offset, frame_size)
-
 	buf := make([]byte, frameSize)
 
 	if buf == nil {
 		return nil, fmt.Errorf("couldn't make buffer of size %d", frameSize)
 	}
 
-	startRead := time.Now()
 	n, _ := mov.Source.ReadAt(buf, frameOffset)
-	log.Printf("HTTP read took %s", time.Since(startRead))
 
 	if n != frameSize {
 		return nil, fmt.Errorf("tried to read %d bytes but got %d instead", frameSize, n)
 	}
 
 	width, height := int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height)
-
-	//startDecode := time.Now()
 	img, err := prores.DecodeProRes(buf, width, height)
-	//log.Printf("Prores decode took %s", time.Since(startDecode))
 
 	return img, err
+
+}
+
+// ExtractNRGBA extracts an individual frame from a ProRes file specifically
+// as an image.NRGBA
+func (mov *LazyQuicktime) ExtractNRGBAPerf(frame uint64) (*image.NRGBA, LQTPerformance, error) {
+
+var perf LQTPerformance
+
+	frameOffset, frameSize, _ := mov.Stbl.SampleOffsetSize(int(frame))
+
+	buf := make([]byte, frameSize)
+
+	if buf == nil {
+		return nil, perf, fmt.Errorf("couldn't make buffer of size %d", frameSize)
+	}
+
+	startRead := time.Now()
+	n, _ := mov.Source.ReadAt(buf, frameOffset)
+	perf.Read = time.Since(startRead);
+
+	if n != frameSize {
+		return nil, perf, fmt.Errorf("tried to read %d bytes but got %d instead", frameSize, n)
+	}
+
+	width, height := int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height)
+
+	startDecode := time.Now()
+	img, err := prores.DecodeProRes(buf, width, height)
+	perf.Decode = time.Since(startDecode)
+
+	return img, perf, err
 
 }

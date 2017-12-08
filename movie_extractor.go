@@ -10,4 +10,5 @@ type MovieExtractor interface {
 	NumFrames() uint64
 	Duration() time.Duration
 	ExtractFrame(frame uint64) (image.Image, error)
+	ExtractFramePerf(frame uint64) (image.Image, LQTPerformance, error)
 }
