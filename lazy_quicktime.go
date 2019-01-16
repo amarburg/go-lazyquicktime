@@ -124,10 +124,9 @@ func (mov *LazyQuicktime) ExtractFramePerf(frame uint64) (image.Image, LQTPerfor
 	return mov.ExtractNRGBAPerf(frame)
 }
 
-// ExtractNRGBA extracts an individual frame from a ProRes file specifically
-// as an image.NRGBA
+// ExtractNRGBA extracts an individual frame from a ProRes file as an image.NRGBA
+// in its native height
 func (mov *LazyQuicktime) ExtractNRGBA(frame uint64) (*image.NRGBA, error) {
-
 	frameOffset, frameSize, _ := mov.Stbl.SampleOffsetSize(int(frame))
 
 	buf := make([]byte, frameSize)
@@ -142,15 +141,13 @@ func (mov *LazyQuicktime) ExtractNRGBA(frame uint64) (*image.NRGBA, error) {
 		return nil, fmt.Errorf("tried to read %d bytes but got %d instead", frameSize, n)
 	}
 
-	width, height := int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height)
-	img, err := prores.DecodeProRes(buf, width, height)
+	img, err := prores.DecodeProRes(buf, int(mov.Trak.Tkhd.Width), int(mov.Trak.Tkhd.Height))
 
 	return img, err
-
 }
 
-// ExtractNRGBA extracts an individual frame from a ProRes file specifically
-// as an image.NRGBA
+// ExtractNRGBAPerf extracts an individual frame from a ProRes file as an image.NRGBA
+// and also returns performance information in an LQTPerformance structure
 func (mov *LazyQuicktime) ExtractNRGBAPerf(frame uint64) (*image.NRGBA, LQTPerformance, error) {
 
 var perf LQTPerformance
